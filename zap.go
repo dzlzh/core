@@ -27,7 +27,10 @@ func NewZap(level, directory string) *zap.Logger {
 		panic("not support level: " + level)
 	}
 
-	logger := zap.New(getEncoderCore(l, directory), zap.AddCaller())
+	logger := zap.New(zapcore.NewTee(
+		getJSONEncoderCore(l, directory),
+		getConsoleEncoderCore(l),
+	), zap.AddCaller())
 	if l == zap.DebugLevel || l == zap.ErrorLevel {
 		logger = logger.WithOptions(zap.AddStacktrace(l))
 	}
@@ -37,7 +40,15 @@ func NewZap(level, directory string) *zap.Logger {
 	return logger
 }
 
-func getEncoderCore(level zapcore.Level, directory string) (core zapcore.Core) {
+func getConsoleEncoderCore(level zapcore.Level) (core zapcore.Core) {
+	return zapcore.NewCore(
+		zapcore.NewConsoleEncoder(getEncoderConfig()),
+		zapcore.AddSync(os.Stdout),
+		level,
+	)
+}
+
+func getJSONEncoderCore(level zapcore.Level, directory string) (core zapcore.Core) {
 	writer, err := writeSyncer(directory)
 	if err != nil {
 		log.Printf("Get Write Syncer Failed err:%v", err.Error())
@@ -58,10 +69,11 @@ func writeSyncer(directory string) (zapcore.WriteSyncer, error) {
 		MaxAge:     30,
 		Compress:   true,
 	}
-	return zapcore.NewMultiWriteSyncer(
-		zapcore.AddSync(os.Stdout),
-		zapcore.AddSync(writer),
-	), nil
+	return zapcore.AddSync(writer), nil
+	// return zapcore.NewMultiWriteSyncer(
+	//     zapcore.AddSync(os.Stdout),
+	//     zapcore.AddSync(writer),
+	// ), nil
 }
 
 func getEncoderConfig() zapcore.EncoderConfig {
