@@ -2,17 +2,21 @@ package core
 
 import (
 	"log"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/exp/zapslog"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func NewZap(level, directory string) *zap.Logger {
+var G_LOG *zap.Logger
+
+func NewZap(level, directory string) {
 	levels := map[string]zapcore.Level{
 		"debug":  zapcore.DebugLevel,
 		"info":   zapcore.InfoLevel,
@@ -27,17 +31,25 @@ func NewZap(level, directory string) *zap.Logger {
 		panic("not support level: " + level)
 	}
 
-	logger := zap.New(zapcore.NewTee(
-		getJSONEncoderCore(l, directory),
-		getConsoleEncoderCore(l),
-	), zap.AddCaller())
-	if l == zap.DebugLevel || l == zap.ErrorLevel {
-		logger = logger.WithOptions(zap.AddStacktrace(l))
+	var core []zapcore.Core
+	core = append(core, getJSONEncoderCore(l, directory))
+	if l == zapcore.DebugLevel {
+		core = append(core, getConsoleEncoderCore(l))
 	}
+	G_LOG = zap.New(
+		zapcore.NewTee(core...),
+		zap.AddCaller(),
+		zap.AddStacktrace(l),
+	)
 
-	zap.ReplaceGlobals(logger)
+	zap.ReplaceGlobals(G_LOG)
 
-	return logger
+	s := slog.New(zapslog.NewHandler(
+		G_LOG.Core(),
+		zapslog.WithCaller(true),
+		zapslog.AddStacktraceAt(slog.LevelDebug),
+	))
+	slog.SetDefault(s)
 }
 
 func getConsoleEncoderCore(level zapcore.Level) (core zapcore.Core) {

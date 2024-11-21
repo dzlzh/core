@@ -2,18 +2,23 @@ package core
 
 import (
 	"fmt"
+	"log/slog"
 
 	"go.uber.org/zap"
 )
 
 func ExampleNewZap() {
-	logger := NewZap("info", "logs")
+	NewZap("info", "logs")
 	// logger.Info("Zap Example", zap.String("Test", "test"))
-	sugar := logger.Sugar()
+	sugar := G_LOG.Sugar()
+	slog.Debug("Slog Example", slog.String("Test", "test"))
+	slog.Info("Slog Example", slog.String("Test", "test"))
+	slog.Warn("Slog Example", slog.String("Test", "test"))
+	slog.Error("Slog Example", slog.String("Test", "test"))
 	// sugar.Info("Sugar Example")
 	// zap.L().Info("Zap L Example")
 	// zap.S().Info("Zap S Example")
-	fmt.Printf("%T\n", logger)
+	fmt.Printf("%T\n", G_LOG)
 	fmt.Printf("%T\n", sugar)
 	fmt.Printf("%T\n", zap.L())
 	fmt.Printf("%T\n", zap.S())
