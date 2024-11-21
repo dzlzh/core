@@ -1,12 +1,13 @@
 module github.com/dzlzh/core
 
-go 1.20
+go 1.21
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/spf13/viper v1.18.2
 	go.uber.org/zap v1.27.0
+	go.uber.org/zap/exp v0.3.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/sqlite v1.5.5
