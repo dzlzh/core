@@ -18,13 +18,13 @@ debug: true
 
 	os.Setenv("TEST_ENV", "env")
 	var c config
-	v := NewViper(&c,
+	NewViper(&c,
 		ViperReadConfig("yaml", cbyte),
 		ViperSetEnvPrefix("TEST"),
 	)
 	fmt.Println(c.Name)
 	fmt.Println(c.Debug)
-	fmt.Println(v.Get("ENV"))
+	fmt.Println(G_VIPER.Get("ENV"))
 	// Output:
 	// Example
 	// true
