@@ -9,7 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewGorm(driver, dsn string) *gorm.DB {
+var G_DB *gorm.DB
+
+func NewGorm(driver, dsn string) {
 	opens := map[string]func(dsn string) gorm.Dialector{
 		"sqlite": sqlite.Open,
 		"mysql":  mysql.Open,
@@ -19,9 +21,10 @@ func NewGorm(driver, dsn string) *gorm.DB {
 		panic("not support driver: " + driver)
 	}
 
-	db, err := gorm.Open(open(dsn), &gorm.Config{})
+	var err error
+
+	G_DB, err = gorm.Open(open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(fmt.Sprintf("failed to connect database: %v", err))
 	}
-	return db
 }
